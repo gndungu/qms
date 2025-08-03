@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %} {% trans 'Register Company' %} {% endblock %}
+ {% block extrastyle %}
+<link rel="stylesheet" href="/static/vendor/select2/css/select2.min.css">
+{% endblock %}
+{% block content %}
+<style>
+  .image-box {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+    padding: 20px;
+    height: 100%;
+  }
+
+  .image-box:hover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-box img {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    margin-bottom: 15px;
+  }
+
+  .text-below h3 {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #333;
+  }
+</style>
+
+<div class="container mt-5">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card card-outline card-primary mb-4">
+            <div class="card-header">Details</div>
+            <div class="card-body">
+                {% crispy form %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
+    </form>
+</div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script type="text/javascript" src="/static/vendor/select2/js/select2.min.js"></script>
+<script type="text/javascript" src="/static/jazzmin/js/change_form.js"></script>
+{% endblock %}

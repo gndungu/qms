@@ -1,0 +1,33 @@
+{% extends "registration/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+ {% block extrastyle %}
+<link rel="stylesheet" href="/static/vendor/select2/css/select2.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="register-box">
+    <div class="card card-outline card-primary shadow">
+        <div class="card-header text-center">
+            <a href="#" class="h3"><b>QMS</b> Register</a>
+        </div>
+        <div class="card-body">
+            <p class="login-box-msg">Create your QMS account</p>
+
+            <form method="post">
+                {% csrf_token %}
+                {% crispy form %}
+            </form>
+
+            <a href="{% url 'login' %}" class="text-center">I already have an account</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/static/vendor/select2/js/select2.min.js"></script>
+<script type="text/javascript" src="/static/jazzmin/js/change_form.js"></script>
+{% endblock %}
