@@ -1,0 +1,10 @@
+# Ignore Python bytecode
+*.pyc
+__pycache__/
+
+# Environment files
+.env
+*.env
+
+# Local settings
+local_setting.py
