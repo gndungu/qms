@@ -93,21 +93,18 @@ class Complaint(models.Model):
 
 
 class TrainingRecord(models.Model):
+    STATUS_CHOICES = [
+        ('completed', 'Completed'),
+        ('in_progress', 'In Progress'),
+        ('overdue', 'Overdue'),
+    ]
+
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    employee = models.ManyToManyField(Employee)
     topic = models.CharField(max_length=255)
     requirement = models.TextField()
     completion_date = models.DateField()
-    status = models.CharField(max_length=50)
-
-
-class TrainingRecord(models.Model):
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
-    topic = models.CharField(max_length=255)
-    requirement = models.TextField()
-    completion_date = models.DateField()
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
 
 
 class ChangeControl(models.Model):
