@@ -97,6 +97,7 @@ class OrganisationForm(forms.ModelForm):
             Row(Column('notes', css_class='form-group col-md-12')),
         )
 
+
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
@@ -110,6 +111,7 @@ class DepartmentForm(forms.ModelForm):
             Row(Column('name', css_class='form-group col-md-6'),
                 Column('coordinator', css_class='form-group col-md-6')),
         )
+
 
 class OrganisationLocationForm(forms.ModelForm):
     class Meta:
@@ -133,6 +135,7 @@ DepartmentFormSet = inlineformset_factory(
     Organisation, Department, form=DepartmentForm,
     fields=['name', 'coordinator'], extra=1, can_delete=True
 )
+
 
 LocationFormSet = inlineformset_factory(
     Organisation, OrganisationLocation, form=OrganisationLocationForm,

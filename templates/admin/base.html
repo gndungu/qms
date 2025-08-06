@@ -209,13 +209,21 @@
 
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column {{ jazzmin_ui.sidebar_list_classes }}" data-widget="treeview" role="menu" data-collapsible="false">
-
-                            <li class="nav-item">
-                                <a href="{% url 'admin:index' %}" class="nav-link">
-                                    <i class="nav-icon fas fa-th-large"></i>
-                                    <p>{% trans 'Dashboard' %}</p>
-                                </a>
-                            </li>
+                            {% if request.user.is_superuser %}
+                                <li class="nav-item">
+                                    <a href="{% url 'admin:index' %}" class="nav-link">
+                                        <i class="nav-icon fas fa-th-large"></i>
+                                        <p>{% trans 'Dashboard' %}</p>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a href="{% url 'home' %}" class="nav-link">
+                                        <i class="nav-icon fas fa-th-large"></i>
+                                        <p>{% trans 'Dashboard' %} </p>
+                                    </a>
+                                </li>
+                            {% endif %}
 
                             {% if jazzmin_settings.navigation_expanded %}
                                 {% for app in side_menu_list %}

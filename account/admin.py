@@ -39,11 +39,6 @@ class CustomUserChangeForm(UserChangeForm):
         fields = '__all__'
 
 
-class CustomUserChangeForm(UserChangeForm):
-    class Meta:
-        model = CustomUser
-        fields = '__all__'
-
 
 class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
@@ -51,7 +46,7 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'full_name', 'password', 'signature', 'role', 'department_head', 'account_type', 'use_two_factor_authentication')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Important dates', {'fields': ('last_login',)}),
     )
 
     add_fieldsets = (
@@ -65,6 +60,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('email',)
     ordering = ('email',)
+    readonly_fields = ('date_joined', 'last_login')
 
 
 class OrganisationLocationInline(admin.StackedInline):

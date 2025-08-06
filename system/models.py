@@ -2,6 +2,8 @@ from django.db import models
 from account.modelmixin import TimeStampMixin
 from account.models import Organisation, CustomUser
 from conf.models import Activity, Forms
+from django.utils import timezone
+from datetime import timedelta
 
 
 # class CustomerTask(TimeStampMixin):
@@ -31,6 +33,33 @@ from conf.models import Activity, Forms
 #     document_title = models.CharField(max_length=255)
 #     document_number = models.CharField(max_length=120)
 #     revision = models.PositiveIntegerField()
+
+class Plan(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_days = models.IntegerField(help_text="How many days the plan lasts")
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Subscription(models.Model):
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            self.end_date = self.start_date + timedelta(days=self.plan.duration_days)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.customer} - {self.plan}"
+
 
 class Employee(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name='employees')
