@@ -32,6 +32,8 @@ class CustomLoginView(LoginView):
         # return reverse_lazy('otp-verification')  # Replace 'custom_dashboard' with your desired URL name
         # if Subscription.objects.filter(organisation=self.request.user):
         #     pass
+        if self.request.user.is_superuser:
+            return reverse_lazy('admin:index')
         return reverse_lazy('home')
 
     def get_context_data(self, **kwargs):

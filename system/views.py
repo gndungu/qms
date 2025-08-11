@@ -20,6 +20,8 @@ class HomeView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
+        if user.is_superuser:
+            return reverse_lazy('/admin/')
         organisation = Organisation.objects.get(representative=user)
         subscription = Subscription.objects.filter(
             organisation=organisation,
