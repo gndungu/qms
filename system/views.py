@@ -1,15 +1,35 @@
+from symbol import subscript
+
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import admin
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 from account.forms import OrganisationForm, DepartmentFormSet, LocationFormSet
+from account.models import Organisation
+from system.models import Subscription, Plan
 
 
 class HomeView(TemplateView):
     template_name = "admin/home.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        organisation = Organisation.objects.get(representative=user)
+        subscription = Subscription.objects.filter(
+            organisation=organisation,
+            is_active=True
+        )
+
+        if not subscription.exists():
+            return redirect(reverse_lazy('packages-view'))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,3 +50,47 @@ class RegisterCompany(View):
         'loc_formset': loc_formset
     }
         return render(self.request, self.template_name, data)
+
+
+class PackageView(TemplateView):
+    template_name = 'system/packages.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        plans = Plan.objects.filter(is_active=True)
+        context['plans'] = plans
+        return context
+
+
+
+class PaymentView(TemplateView):
+    template_name = 'system/payment.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        plan = self.request.GET.get('plan')
+        pq = Plan.objects.get(id=plan)
+        context['plan'] = pq
+        return context
+
+
+class PaymentProcessView(View):
+    template_name = 'system/payment.html'
+
+    def post(self, request, **kwargs):
+        method = request.POST.get("method")
+        # Here you'd integrate with payment API
+        # For example:
+        if method == "mobile_money":
+            # validate + send request to MTN / Airtel API
+            pass
+        elif method == "visa":
+            # send request to Visa/Mastercard API
+            pass
+
+        # Simulate success
+        return JsonResponse({
+            "success": True,
+            "redirect_url": "/payment-success/"
+        })
+        # return JsonResponse({"success": False, "message": "Invalid request"})

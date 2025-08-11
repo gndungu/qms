@@ -38,6 +38,7 @@ class Plan(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_name = models.CharField(max_length=120, null=True)
     duration_days = models.IntegerField(help_text="How many days the plan lasts")
     is_active = models.BooleanField(default=True)
 

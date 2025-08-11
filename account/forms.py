@@ -19,7 +19,7 @@ class RegistrationForm(forms.Form):
     full_name = forms.CharField(label='Full Name')
     email = forms.EmailField(label='Email')
     phone_number = forms.CharField(label='Phone Number')
-    company_name = forms.CharField(label="Company Name")
+    company_name = forms.CharField(label="Company / Organisation Name")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,6 +39,25 @@ class RegistrationForm(forms.Form):
             Submit('register', 'Register', css_class='btn btn-primary btn-block')
         )
     #
+
+    def clean(self):
+        data = super().clean()  # ensures field-specific clean() methods run
+        email = data.get('email')
+        phone_number = data.get('phone_number')
+        company_name = data.get('company_name')
+
+        if email and CustomUser.objects.filter(email=email).exists():
+            self.add_error('email', 'Email exists. Please provide another email')
+
+        if phone_number and CustomUser.objects.filter(phone_number=phone_number).exists():
+            self.add_error('phone_number', 'Phone Number exists. Please provide another phonenumber')
+
+        if company_name and Organisation.objects.filter(name=company_name).exists():
+            self.add_error('company_name', 'Company / Organisation exists. Please provide another company name')
+
+        return data
+
+
     def send_password_email(self, password):
         subject = 'Your Password for Registration'
         message = f'Hello {self.cleaned_data["full_name"]}, your password is: {password}'
@@ -59,7 +78,7 @@ class RegistrationForm(forms.Form):
         try:
             with transaction.atomic():
                 # Create a new user with the provided information
-                user = CustomUser.objects.create(email=self.cleaned_data['email'], is_active=True, is_staff=True, account_type=CustomUser.AccountType.CUSTOMER)
+                user = CustomUser.objects.create(email=self.cleaned_data['email'], phone_number=self.cleaned_data.get('phone_number'), is_active=True, is_staff=True, account_type=CustomUser.AccountType.CUSTOMER)
                 user.full_name= f"{self.cleaned_data['full_name']} "
                 user.set_password(password)
 
@@ -71,9 +90,12 @@ class RegistrationForm(forms.Form):
                 # Add the user to the "SMS users" group
                 user.groups.add(sms_users_group)
                 user.save()
+                return user
         except Exception as e:
             print("Exception occurred:")
             traceback.print_exc()  # <-- This prints full traceback to the console
+            # raise forms.ValidationError(e)
+            return None
 
 
 class OrganisationForm(forms.ModelForm):

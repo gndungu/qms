@@ -37,6 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=255, null=True, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     use_two_factor_authentication = models.BooleanField(default=True, verbose_name="Two Factor Authentication")
@@ -80,6 +81,19 @@ class Organisation(TimeStampMixin):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class OrganisationUser(TimeStampMixin):
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="organisation_user")
+
+
+    class Meta:
+        unique_together = ['organisation', 'user']
+
+
+    def __str__(self):
+        return f"{self.user.full_name}"
 
 
 class OrganisationLocation(TimeStampMixin):

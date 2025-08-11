@@ -1,5 +1,5 @@
 import traceback
-
+import logging
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import render, redirect
@@ -11,8 +11,11 @@ from django.contrib.auth import login
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, DetailView
 
+from system.models import Subscription
 from .forms import RegistrationForm
 from .models import Organisation
+
+logger = logging.getLogger(__name__)
 
 
 class CustomLoginView(LoginView):
@@ -27,6 +30,8 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         # Define the custom success URL where you want to redirect the user
         # return reverse_lazy('otp-verification')  # Replace 'custom_dashboard' with your desired URL name
+        # if Subscription.objects.filter(organisation=self.request.user):
+        #     pass
         return reverse_lazy('home')
 
     def get_context_data(self, **kwargs):
@@ -72,22 +77,31 @@ class RegisterView(View):
 
     def post(self, request):
         form = RegistrationForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    user = form.register_user()
-                    org = Organisation(representative=user)
-                    org.name = form.cleaned_data.get('company_name')
-                    org.save()
-                    messages.success(request, "Sign Up successful, Your password has been sent to your email")
-                return redirect(reverse_lazy("login"))  # Redirect to login page after successful registration
 
-            except Exception as e:
-                messages.error(request, "Sorry, something went wrong")
-                print("Exception occurred:")
-                traceback.print_exc()  # <-- This prints full traceback to the console
-                # Handle any exceptions that might occur during registration
-                # You can log the error or display an error message to the user
-                pass
+        if not form.is_valid():
+            # Form is invalid — re-render page with errors
+            return render(request, self.template_name, {'form': form, 'title': self.title})
 
-        return render(request, self.template_name, {'form': form, 'title': self.title})
+        try:
+            with transaction.atomic():
+                # Register the user
+                user = form.register_user()
+                print(user)
+                # Create organisation linked to user
+                Organisation.objects.create(
+                    representative=user,
+                    name=form.cleaned_data['company_name']
+                )
+
+            messages.success(
+                request,
+                "Sign Up successful. Your password has been sent to your email."
+            )
+            return redirect(reverse_lazy("login"))
+
+        except Exception as e:
+            # Log full traceback for debugging
+            logger.error("Registration error: %s", str(e))
+            logger.debug(traceback.format_exc())
+            form.add_error(None, f"Sorry, something went wrong during registration. {e}")
+            return render(request, self.template_name, {'form': form, 'title': self.title})

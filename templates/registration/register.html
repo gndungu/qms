@@ -12,8 +12,24 @@
         <div class="card-header text-center">
             <a href="#" class="h3"><b>QMS</b> Register</a>
         </div>
-        <div class="card-body">
+       <div class="card-body">
             <p class="login-box-msg">Create your QMS account</p>
+
+            {% if form.errors %}
+                <div class="callout callout-danger">
+                    <h5>There’s a problem</h5>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
             <form method="post">
                 {% csrf_token %}

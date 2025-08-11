@@ -1,0 +1,236 @@
+{% extends "admin/base.html" %}
+{% load crispy_forms_tags %}
+{% load static humanize %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block content_title %}{% trans 'Complete Payment' %}{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+<style>
+  .payment-card {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+  }
+
+  .payment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  .payment-option {
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  .payment-option.active {
+    border-color: #0d6efd;
+    background-color: rgba(13,110,253,0.05);
+  }
+
+  .payment-option input {
+    display: none;
+  }
+
+  .modal {
+      z-index: 10550 !important; /* higher than AdminLTE sidebar (z-index 1040) */
+  }
+
+  .modal-backdrop {
+      z-index: 10540 !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card card-outline card-primary payment-card shadow-lg rounded-lg">
+        <div class="card-header text-center">
+          <h3 class="card-title">
+            Plan: <strong>{{ plan.name }}</strong>
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- Payment Method Selection -->
+          <div class="mb-4">
+            <label>Amount: </label> {{ plan.price|intcomma }}
+            <label class="d-block mb-2"><strong>Select Payment Method</strong></label>
+            <div class="row">
+              <div class="col-6">
+                <label class="payment-option w-100 text-center p-3 border rounded" id="option-visa">
+                  <input type="radio" name="payment_method" value="visa" checked>
+                  <i class="fas fa-credit-card fa-2x mb-2 text-primary"></i>
+                  <div>Visa / Mastercard</div>
+                </label>
+              </div>
+              <div class="col-6">
+                <label class="payment-option w-100 text-center p-3 border rounded" id="option-momo">
+                  <input type="radio" name="payment_method" value="mobile_money">
+                  <i class="fas fa-mobile-alt fa-2x mb-2 text-success"></i>
+                  <div>Mobile Money</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Form -->
+          <form action="success.html" method="post" id="payment-form">
+            {% csrf_token %}
+            <div id="visa-fields">
+              <div class="form-group">
+                <label for="cardName">Name on Card</label>
+                <input type="text" class="form-control" id="cardName" placeholder="John Doe">
+              </div>
+              <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="expiry">Expiry Date</label>
+                  <input type="text" class="form-control" id="expiry" placeholder="MM/YY">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="cvv">CVV</label>
+                  <input type="password" class="form-control" id="cvv" placeholder="123">
+                </div>
+              </div>
+            </div>
+
+            <div id="momo-fields" style="display: none;">
+              <div class="form-group">
+                <label for="momoNumber">Mobile Money Number</label>
+                <input type="text" class="form-control" id="momoNumber" placeholder="07XX XXX XXX">
+              </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg rounded-pill mt-3">
+              Pay Now
+            </button>
+          </form>
+
+          <!-- Loading Spinner -->
+          <div id="loading" class="text-center mt-3" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Processing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+<script src="{% static 'jazzmin/js/change_form.js' %}"></script>
+<script>
+  // Toggle payment method
+  document.querySelectorAll('.payment-option').forEach(option => {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
+      this.classList.add('active');
+
+      if (this.querySelector('input').value === 'visa') {
+        document.getElementById('visa-fields').style.display = 'block';
+        document.getElementById('momo-fields').style.display = 'none';
+      } else {
+        document.getElementById('visa-fields').style.display = 'none';
+        document.getElementById('momo-fields').style.display = 'block';
+      }
+    });
+  });
+
+
+  $(document).ready(function () {
+    function showModal(title, message) {
+        $("#alertTitle").text(title);
+        $("#alertMessage").html(message);
+        $("#alertModal").modal("show");
+    }
+
+    $("input[name='payment_method']").on("change", function () {
+        if ($(this).val() === "visa") {
+            $("#visa-fields").show();
+            $("#momo-fields").hide();
+        } else {
+            $("#visa-fields").hide();
+            $("#momo-fields").show();
+        }
+    });
+
+    $("#payment-form").on("submit", function (e) {
+        e.preventDefault();
+
+        let method = $("input[name='payment_method']:checked").val();
+        let data = {};
+        let errors = [];
+
+        if (method === "visa") {
+            let cardName = $("#cardName").val().trim();
+            let cardNumber = $("#cardNumber").val().trim();
+            let expiry = $("#expiry").val().trim();
+            let cvv = $("#cvv").val().trim();
+
+            if (!cardName) errors.push("Card name is required.");
+            if (!cardNumber || cardNumber.length < 12) errors.push("Enter a valid card number.");
+            if (!expiry) errors.push("Expiry date is required.");
+            if (!cvv || cvv.length < 3) errors.push("Enter a valid CVV.");
+
+            data = { method, cardName, cardNumber, expiry, cvv };
+
+        } else if (method === "mobile_money") {
+            let momoNumber = $("#momoNumber").val().trim();
+            let momoProvider = $("#momoProvider").val();
+            let ugPattern = /^(070|071|075|076|077|078|079)\d{7}$/;
+
+            if (!momoNumber) {
+                errors.push("Mobile Money number is required.");
+            } else if (!ugPattern.test(momoNumber.replace(/\s+/g, ""))) {
+                errors.push("Enter a valid Ugandan number (e.g., 077123456).");
+            }
+
+            data = { method, momoNumber, momoProvider };
+        }
+
+        if (errors.length > 0) {
+            showModal("Validation Error", errors.join("<br>"));
+            return;
+        }
+
+        $("#loading").show();
+
+        $.ajax({
+            url: "{% url 'process-payment' %}",
+            method: "POST",
+            data: {
+                ...data,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            },
+            success: function (response) {
+                $("#loading").hide();
+                console.log(response)
+                if (response.success) {
+                    window.location.href = response.redirect_url;
+                } else {
+                    showModal("Payment Failed", response.message || "Payment could not be processed. Please try again.");
+                }
+            },
+            error: function () {
+                $("#loading").hide();
+                showModal("Error", "An unexpected error occurred. Please try again.");
+            }
+        });
+    });
+});
+
+</script>
+{% endblock %}

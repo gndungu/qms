@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from account.views import RegisterView, OrganisationDetailView, CustomLoginView
-from system.views import HomeView, RegisterCompany
+from system.views import HomeView, RegisterCompany, PackageView, PaymentView, PaymentProcessView
 
 urlpatterns = [
     path('admin/account/customer/<int:pk>/detail/', (OrganisationDetailView.as_view()), name="customer_detail"),
@@ -36,6 +36,9 @@ urlpatterns = [
 
     path("", HomeView.as_view(), name="home"),
     path("register/company/", RegisterCompany.as_view(), name="register_company"),
+    path("packages/", PackageView.as_view(), name="package-view"),
+    path("payment/", PaymentView.as_view(), name="payment-view"),
+    path("process/payment/", PaymentProcessView.as_view(), name="process-payment"),
 ]
 
 if settings.DEBUG:

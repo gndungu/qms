@@ -44,7 +44,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
 
     fieldsets = (
-        (None, {'fields': ('email', 'full_name', 'password', 'signature', 'role', 'department_head', 'account_type', 'use_two_factor_authentication')}),
+        (None, {'fields': ('email', 'full_name', 'phone_number', 'password', 'signature', 'role', 'department_head', 'account_type', 'use_two_factor_authentication')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
     )

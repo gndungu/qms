@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+{% load crispy_forms_tags %}
+{% load static humanize %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %}{% trans 'Select Package' %}{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+<style>
+  .plan-card {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+
+  .plan-header {
+    border-radius: 20px 20px 0 0;
+    font-size: 1.5rem;
+  }
+
+  .plan-price {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 15px 0;
+  }
+
+  .container-full {
+    max-width: 1200px;
+    margin: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-full mt-4">
+  <div class="row justify-content-center">
+    {% for plan in plans %}
+      <div class="col-md-6 mb-4">
+        <div class="card card-outline plan-card
+          {% if forloop.counter == 1 %}border-primary
+          {% elif forloop.counter == 2 %}border-success
+          {% else %}border-warning
+          {% endif %}">
+          <div class="card-header text-center plan-header">
+            {{ plan.name }}
+          </div>
+          <div class="card-body text-center">
+            <div class="plan-price">
+              {{ plan.price|intcomma }} / {{ plan.duration_name }}
+            </div>
+            <p>{{ plan.description }}</p>
+          </div>
+          <div class="card-footer bg-transparent text-center">
+            <a href="{% url 'payment-view' %}?plan={{ plan.id }}"
+               class="btn {% if forloop.counter == 1 %}btn-primary
+              {% elif forloop.counter == 2 %}btn-success
+              {% else %}btn-warning
+              {% endif %} btn-lg btn-block rounded-pill">
+              Select
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    <!-- Standard Plan -->
+
+
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+<script src="{% static 'jazzmin/js/change_form.js' %}"></script>
+{% endblock %}
