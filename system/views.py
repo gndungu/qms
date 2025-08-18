@@ -36,6 +36,26 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['available_apps'] = admin.site.get_app_list(self.request)
+        data = {
+            'documents':0,
+            'active_audits':0,
+            'due_this':0,
+            'capas':0,
+            'capa_percentage':0,
+            'trained_employees':0,
+            'trained_employees_completion':0,
+            'employees':0,
+            'documents':0,
+            'audits':0,
+            'capas':0,
+            'non_comformance':0,
+            'training_records':0,
+            'change_control':0,
+            'risk_assessment':0,
+            'management_review':0,
+            'quality_policy':0,
+        }
+        context.update(data)
         return context
 
 
@@ -85,7 +105,13 @@ class PaymentProcessView(View):
         # For example:
         if method == "mobile_money":
             # validate + send request to MTN / Airtel API
-            pass
+            user = self.request.user
+            organisation = Organisation.objects.get(representative=user)
+            Subscription.objects.create(
+                organisation = organisation,
+                plan=Plan.objects.get(pk=1),
+                is_active=True
+            )
         elif method == "visa":
             # send request to Visa/Mastercard API
             pass
@@ -93,6 +119,6 @@ class PaymentProcessView(View):
         # Simulate success
         return JsonResponse({
             "success": True,
-            "redirect_url": "/payment-success/"
+            "redirect_url": "/"
         })
         # return JsonResponse({"success": False, "message": "Invalid request"})

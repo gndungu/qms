@@ -28,7 +28,7 @@
                     <i data-lucide="check-circle" class="stat-icon stat-icon-success"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">342</div>
+                    <div class="stat-value">{{ documents }}</div>
                     <div class="stat-change">
                         <i data-lucide="trending-up" class="trend-icon trend-up"></i>
                         +12% from last month
@@ -42,8 +42,8 @@
                     <i data-lucide="clock" class="stat-icon stat-icon-warning"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">8</div>
-                    <div class="stat-change">2 due this week</div>
+                    <div class="stat-value">{{ active_audits }}</div>
+                    <div class="stat-change">{{ due_this_week }} due this week</div>
                 </div>
             </div>
 
@@ -53,10 +53,10 @@
                     <i data-lucide="alert-triangle" class="stat-icon stat-icon-destructive"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">15</div>
+                    <div class="stat-value">{{ capas}}</div>
                     <div class="stat-change">
                         <i data-lucide="trending-down" class="trend-icon trend-down"></i>
-                        -20% from last month
+                        {{ capa_percentage }}% from last month
                     </div>
                 </div>
             </div>
@@ -67,10 +67,10 @@
                     <i data-lucide="users" class="stat-icon stat-icon-default"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">187</div>
+                    <div class="stat-value">{{ trained_employees }}</div>
                     <div class="stat-change">
                         <i data-lucide="trending-up" class="trend-icon trend-up"></i>
-                        +5% completion rate
+                        {{ trained_employees_completion }}% completion rate
                     </div>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Employee Management</h3>
-                                <p class="card-count">187</p>
+                                <p class="card-count">{{ employees }}</p>
                             </div>
                         </div>
                         <p class="card-description">Manage employee records, roles, and organizational structure</p>
@@ -110,7 +110,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Document Control</h3>
-                                <p class="card-count">342</p>
+                                <p class="card-count">{{ documents }}</p>
                             </div>
                         </div>
                         <p class="card-description">Version control, approval workflows, and document lifecycle management</p>
@@ -127,7 +127,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Internal Audits</h3>
-                                <p class="card-count">8</p>
+                                <p class="card-count"> {{ audits }}</p>
                             </div>
                         </div>
                         <p class="card-description">Schedule, conduct, and track internal quality audits</p>
@@ -144,7 +144,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">CAPA Management</h3>
-                                <p class="card-count">15</p>
+                                <p class="card-count">{{ capas }}</p>
                             </div>
                         </div>
                         <p class="card-description">Corrective and Preventive Actions tracking and effectiveness verification</p>
@@ -161,7 +161,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Non-Conformances</h3>
-                                <p class="card-count">12</p>
+                                <p class="card-count">{{ non_comformance }}</p>
                             </div>
                         </div>
                         <p class="card-description">Report, investigate, and resolve quality non-conformances</p>
@@ -178,7 +178,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Training Records</h3>
-                                <p class="card-count">245</p>
+                                <p class="card-count">{{ training_records }}</p>
                             </div>
                         </div>
                         <p class="card-description">Employee training management, compliance tracking, and competency records</p>
@@ -195,7 +195,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Change Control</h3>
-                                <p class="card-count">6</p>
+                                <p class="card-count">{{ change_control }}</p>
                             </div>
                         </div>
                         <p class="card-description">Manage organizational changes with proper approval workflows</p>
@@ -212,7 +212,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Risk Assessment</h3>
-                                <p class="card-count">23</p>
+                                <p class="card-count">{{ risk_assessment }}</p>
                             </div>
                         </div>
                         <p class="card-description">Identify, assess, and mitigate operational and compliance risks</p>
@@ -229,7 +229,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Management Review</h3>
-                                <p class="card-count">4</p>
+                                <p class="card-count">{{ management_review }}</p>
                             </div>
                         </div>
                         <p class="card-description">Schedule and document management review meetings and actions</p>
@@ -246,7 +246,7 @@
                             </div>
                             <div class="card-info">
                                 <h3 class="card-title">Quality Policy</h3>
-                                <p class="card-count">3</p>
+                                <p class="card-count">{{ quality_policy }}</p>
                             </div>
                         </div>
                         <p class="card-description">Maintain and communicate organizational quality policies</p>

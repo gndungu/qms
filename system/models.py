@@ -1,4 +1,6 @@
 from django.db import models
+
+from account.admin import OrganisationAdmin
 from account.modelmixin import TimeStampMixin
 from account.models import Organisation, CustomUser
 from conf.models import Activity, Forms
@@ -329,6 +331,8 @@ class ManagementReview(models.Model):
     agenda = models.TextField()
     minutes = models.TextField()
     actions = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-date']
@@ -345,6 +349,8 @@ class QualityPolicy(models.Model):
     approved_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='approved_policies')
     approval_date = models.DateField()
     active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-approval_date']
@@ -353,3 +359,66 @@ class QualityPolicy(models.Model):
 
     def __str__(self):
         return f"Policy approved on {self.approval_date}"
+
+
+class Invoice(models.Model):
+    STATUS_CHOICES = [
+        ("DRAFT", "Draft"),
+        ("SENT", "Sent"),
+        ("PAID", "Paid"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name="invoices")
+    invoice_number = models.CharField(max_length=50, unique=True)
+    date_issued = models.DateField(auto_now_add=True)
+    due_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="DRAFT")
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
+
+    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Invoice {self.invoice_number} - {self.customer.name}"
+
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="items")
+    description = models.CharField(max_length=255)
+    quantity = models.IntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    @property
+    def line_total(self):
+        return self.quantity * self.unit_price
+
+    def __str__(self):
+        return f"{self.description} ({self.quantity} × {self.unit_price})"
+
+
+class Transaction(models.Model):
+
+    class PaymentMethod(models.TextChoices):
+        MOBILEMONEY = 'MOBILEMONEY' 'MOBILEMONEY'
+        VISA = 'VISA' 'VISA'
+
+    class StatusOption(models.TextChoices):
+        PENDING = 'PENDING' 'PENDING'
+        FAILED = 'FAILED' 'FAILED'
+        SUCCESSFUL = 'SUCCESSFUL' 'SUCCESSFUL'
+        INDETERMINATE = 'INDETERMINATE' 'INDETERMINATE'
+
+    reference = models.CharField(max_length=255, unique=True)
+    msisdn = models.CharField(max_length=120, null=True, blank=True)
+    amount = models.DecimalField(max_digits=9, decimal_places=2)
+    status = models.CharField(max_length=120, choices=StatusOption.choices)
+    payment_method  = models.CharField(max_length=120, choices=PaymentMethod.choices)
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="transactions", null=True, blank=True)
+    provider_reference = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.payment_method} - {self.amount_paid} for {self.invoice.invoice_number}"
