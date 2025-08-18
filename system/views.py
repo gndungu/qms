@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from account.forms import OrganisationForm, DepartmentFormSet, LocationFormSet
 from account.models import Organisation
-from system.models import Subscription, Plan
+from system.models import Subscription, Plan, Document, Audit
 
 
 class HomeView(TemplateView):
@@ -36,8 +36,13 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['available_apps'] = admin.site.get_app_list(self.request)
+
+        documents = Document.objects.all()
+        active_audits = Audit.objects.all()
+
+
         data = {
-            'documents':0,
+            'documents':documents.count(),
             'active_audits':0,
             'due_this':0,
             'capas':0,
